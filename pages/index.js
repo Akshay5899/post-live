@@ -7,92 +7,6 @@ export default function Home() {
   const [image, setImage] = useState(null);
   const [editId, setEditId] = useState(null);
 
-  /* ---------------- STYLES ---------------- */
-  const styles = {
-    container: {
-      maxWidth: "700px",
-      margin: "40px auto",
-      padding: "20px",
-      fontFamily: "Arial, sans-serif",
-    },
-    heading: {
-      textAlign: "center",
-      marginBottom: "25px",
-      color: "#333",
-    },
-    form: {
-      background: "#f9f9f9",
-      padding: "20px",
-      borderRadius: "8px",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-      marginBottom: "30px",
-    },
-    input: {
-      width: "100%",
-      padding: "10px",
-      marginBottom: "12px",
-      borderRadius: "4px",
-      border: "1px solid #ccc",
-      fontSize: "14px",
-    },
-    button: {
-      padding: "10px 16px",
-      backgroundColor: "#0070f3",
-      color: "#fff",
-      border: "none",
-      borderRadius: "4px",
-      cursor: "pointer",
-      fontSize: "14px",
-    },
-    updateBtn: {
-      padding: "10px 16px",
-      backgroundColor: "#28a745",
-      color: "#fff",
-      border: "none",
-      borderRadius: "4px",
-      cursor: "pointer",
-      fontSize: "14px",
-    },
-    postCard: {
-      border: "1px solid #ddd",
-      borderRadius: "6px",
-      padding: "15px",
-      marginBottom: "15px",
-      backgroundColor: "#fff",
-    },
-    postTitle: {
-      margin: "10px 0 5px",
-      color: "#222",
-    },
-    postDesc: {
-      margin: 0,
-      color: "#555",
-    },
-    actionBtn: {
-      marginTop: "10px",
-      marginRight: "10px",
-      padding: "6px 12px",
-      border: "none",
-      borderRadius: "4px",
-      cursor: "pointer",
-      fontSize: "13px",
-    },
-    editBtn: {
-      backgroundColor: "#ffc107",
-      color: "#000",
-    },
-    deleteBtn: {
-      backgroundColor: "#dc3545",
-      color: "#fff",
-    },
-    image: {
-      width: "100%",
-      maxHeight: "200px",
-      objectFit: "cover",
-      borderRadius: "4px",
-    },
-  };
-
   /* ---------------- API CALLS ---------------- */
   const fetchPosts = async () => {
     const res = await fetch("/api/posts");
@@ -104,7 +18,8 @@ export default function Home() {
     fetchPosts();
   }, []);
 
-  const addPost = async () => {
+  /* ---------------- ADD / UPDATE POST ---------------- */
+  const submitPost = async () => {
     if (!title || !desc) {
       alert("Title and Description required");
       return;
@@ -115,52 +30,78 @@ export default function Home() {
     formData.append("description", desc);
     if (image) formData.append("image", image);
 
-    const res = await fetch("/api/posts", {
-      method: "POST",
+    let url = "/api/posts";
+    let method = "POST";
+
+    if (editId) {
+      url = `/api/posts?id=${editId}`;
+      method = "PUT";
+    }
+
+    const res = await fetch(url, {
+      method,
       body: formData,
     });
 
     const data = await res.json();
-    setPosts((prev) => [data, ...prev]);
+
+    if (editId) {
+      setPosts(posts.map((p) => (p._id === editId ? data : p)));
+      setEditId(null);
+    } else {
+      setPosts((prev) => [data, ...prev]);
+    }
+
     setTitle("");
     setDesc("");
     setImage(null);
   };
 
+  /* ---------------- DELETE POST ---------------- */
   const deletePost = async (id) => {
     await fetch(`/api/posts?id=${id}`, { method: "DELETE" });
     setPosts(posts.filter((p) => p._id !== id));
   };
 
-  const updatePost = async () => {
-    const res = await fetch(`/api/posts?id=${editId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, description: desc }),
-    });
-
-    const data = await res.json();
-    setPosts(posts.map((p) => (p._id === editId ? data : p)));
-    setEditId(null);
-    setTitle("");
-    setDesc("");
-  };
-
   /* ---------------- UI ---------------- */
   return (
-    <div style={styles.container}>
-      <h2 style={styles.heading}>Live API Posts</h2>
+    <div style={{ maxWidth: "700px", margin: "40px auto", padding: "20px" }}>
+      <h2 style={{ textAlign: "center", marginBottom: "25px", color: "#333" }}>
+        Live API Posts
+      </h2>
 
-      <div style={styles.form}>
+      <div
+        style={{
+          background: "#f9f9f9",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          marginBottom: "30px",
+        }}
+      >
         <input
-          style={styles.input}
+          style={{
+            width: "100%",
+            padding: "10px",
+            marginBottom: "12px",
+            borderRadius: "4px",
+            border: "1px solid #ccc",
+            fontSize: "14px",
+          }}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Title"
         />
 
         <input
-          style={styles.input}
+          style={{
+            width: "100%",
+            padding: "10px",
+            marginBottom: "12px",
+            borderRadius: "4px",
+            border: "1px solid #ccc",
+            fontSize: "14px",
+          }}
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
           placeholder="Description"
@@ -168,31 +109,68 @@ export default function Home() {
 
         <input
           type="file"
-          style={styles.input}
+          style={{
+            width: "100%",
+            padding: "10px",
+            marginBottom: "12px",
+            borderRadius: "4px",
+            border: "1px solid #ccc",
+            fontSize: "14px",
+          }}
           onChange={(e) => setImage(e.target.files[0])}
         />
 
-        {editId ? (
-          <button style={styles.updateBtn} onClick={updatePost}>
-            Update Post
-          </button>
-        ) : (
-          <button style={styles.button} onClick={addPost}>
-            Add Post
-          </button>
-        )}
+        <button
+          style={{
+            padding: "10px 16px",
+            backgroundColor: editId ? "#28a745" : "#0070f3",
+            color: "#fff",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "14px",
+          }}
+          onClick={submitPost}
+        >
+          {editId ? "Update Post" : "Add Post"}
+        </button>
       </div>
 
       {posts.length === 0 && <p>No posts found.</p>}
 
       {posts.map((p) => (
-        <div key={p._id} style={styles.postCard}>
-          {p.image && <img src={p.image} alt="" style={styles.image} />}
-          <h4 style={styles.postTitle}>{p.title}</h4>
-          <p style={styles.postDesc}>{p.description}</p>
+        <div
+          key={p._id}
+          style={{
+            border: "1px solid #ddd",
+            borderRadius: "6px",
+            padding: "15px",
+            marginBottom: "15px",
+            backgroundColor: "#fff",
+          }}
+        >
+          {p.image && (
+            <img
+              src={p.image}
+              alt=""
+              style={{ width: "100%", maxHeight: "200px", objectFit: "cover", borderRadius: "4px" }}
+            />
+          )}
+          <h4 style={{ margin: "10px 0 5px", color: "#222" }}>{p.title}</h4>
+          <p style={{ margin: 0, color: "#555" }}>{p.description}</p>
 
           <button
-            style={{ ...styles.actionBtn, ...styles.editBtn }}
+            style={{
+              marginTop: "10px",
+              marginRight: "10px",
+              padding: "6px 12px",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "13px",
+              backgroundColor: "#ffc107",
+              color: "#000",
+            }}
             onClick={() => {
               setEditId(p._id);
               setTitle(p.title);
@@ -203,7 +181,17 @@ export default function Home() {
           </button>
 
           <button
-            style={{ ...styles.actionBtn, ...styles.deleteBtn }}
+            style={{
+              marginTop: "10px",
+              marginRight: "10px",
+              padding: "6px 12px",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "13px",
+              backgroundColor: "#dc3545",
+              color: "#fff",
+            }}
             onClick={() => deletePost(p._id)}
           >
             Delete
