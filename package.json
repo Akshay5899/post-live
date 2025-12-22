@@ -9,8 +9,10 @@
   "dependencies": {
     "cloudinary": "^1.41.3",
     "mongoose": "^7.6.0",
+    "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
     "next": "16.1.0",
+    "next-connect": "^1.0.0",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   }
