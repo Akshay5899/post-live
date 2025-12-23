@@ -20,45 +20,106 @@ const Login = () => {
 
       if (res.ok) {
         localStorage.setItem("token", data.token);
-        router.push("/posts"); // redirect to posts page
+        router.push("/posts");
       } else {
         alert(data.message || "Login failed");
       }
     } catch (err) {
-      console.error(err);
       alert("Something went wrong");
     }
   };
 
   return (
-    <form onSubmit={handleLogin} style={formStyle}>
-      <h2>Login</h2>
-      <input
-        type="email"
-        placeholder="Email"
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      <button type="submit">Login</button>
-    </form>
+    <div style={container}>
+      <form onSubmit={handleLogin} style={form}>
+        <h2 style={title}>Login</h2>
+
+        <input
+          style={input}
+          type="email"
+          placeholder="Email address"
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+
+        <input
+          style={input}
+          type="password"
+          placeholder="Password"
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+
+        <button style={button} type="submit">
+          Login
+        </button>
+
+        <p style={text}>
+          Don’t have an account?
+          <span style={link} onClick={() => router.push("/register")}>
+            {" "}Register
+          </span>
+        </p>
+      </form>
+    </div>
   );
 };
 
 export default Login;
 
 /* ---------------- STYLES ---------------- */
-const formStyle = {
+
+const container = {
+  minHeight: "100vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  background: "linear-gradient(135deg, #667eea, #764ba2)",
+};
+
+const form = {
+  width: "100%",
   maxWidth: "400px",
-  margin: "50px auto",
-  padding: "20px",
-  border: "1px solid #ddd",
-  borderRadius: "8px",
+  backgroundColor: "#fff",
+  padding: "30px",
+  borderRadius: "10px",
+  boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+};
+
+const title = {
+  marginBottom: "20px",
   textAlign: "center",
-  backgroundColor: "#f9f9f9",
+  color: "#333",
+};
+
+const input = {
+  width: "100%",
+  padding: "12px",
+  marginBottom: "15px",
+  borderRadius: "6px",
+  border: "1px solid #ccc",
+  fontSize: "15px",
+};
+
+const button = {
+  width: "100%",
+  padding: "12px",
+  backgroundColor: "#667eea",
+  color: "#fff",
+  border: "none",
+  borderRadius: "6px",
+  fontSize: "16px",
+  cursor: "pointer",
+};
+
+const text = {
+  marginTop: "15px",
+  textAlign: "center",
+  fontSize: "14px",
+};
+
+const link = {
+  color: "#667eea",
+  cursor: "pointer",
+  fontWeight: "bold",
 };
